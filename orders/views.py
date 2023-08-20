@@ -1,13 +1,18 @@
 from django.shortcuts import render
+from django.views import View
 from .models import OrderItem
 from .forms import OrderCreateForm
 from cart.cart import Cart
 
 
-def order_create(request):
-    cart = Cart(request)
+class OrderCreateView(View):
+    def get(self, request):
+        cart = Cart(request)
+        form = OrderCreateForm()
+        return render(request, "orders/order/create.html", {"cart": cart, "form": form})
 
-    if request.method == "POST":
+    def post(self, request):
+        cart = Cart(request)
         form = OrderCreateForm(request.POST)
         if form.is_valid():
             order = form.save()
@@ -18,6 +23,4 @@ def order_create(request):
                                          quantity=item["quantity"])
             cart.clear()
             return render(request, "orders/order/created.html", {"order": order})
-    else:
-        form = OrderCreateForm()
-    return render(request, "orders/order/create.html", {"cart": cart, "form": form})
+        return render(request, "orders/order/create.html", {"cart": cart, "form": form})
