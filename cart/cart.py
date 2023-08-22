@@ -1,18 +1,18 @@
 from django.conf import settings
 from decimal import Decimal
-
 from shop.models import Product
+from typing import Dict, Union, Any
 
 
 class Cart:
     def __init__(self, request):
         self.session = request.session
-        cart = self.session.get(settings.CART_SESSION_ID)
+        cart: Dict[str, Union[Dict[str, Union[int, str]], Any]] = self.session.get(settings.CART_SESSION_ID)
         if not cart:
             cart = self.session[settings.CART_SESSION_ID] = {}
         self.cart = cart
 
-    def add(self, product, quantity=1, override_quantity=False):
+    def add(self, product: Product, quantity=1, override_quantity: bool = False) -> None:
         product_id = str(product.id)
         if product_id not in self.cart:
             self.cart[product_id] = {"quantity": 0,
@@ -23,10 +23,10 @@ class Cart:
             self.cart[product_id]["quantity"] += quantity
         self.save()
 
-    def save(self):
+    def save(self) -> None:
         self.session.modified = True
 
-    def remove(self, product):
+    def remove(self, product: Product) -> None:
         product_id = str(product.id)
         if product_id in self.cart:
             del self.cart[product_id]
@@ -43,13 +43,13 @@ class Cart:
             item["total_price"] = item["price"] * item["quantity"]
             yield item
 
-    def __len__(self):
+    def __len__(self) -> int:
         return sum(item["quantity"] for item in self.cart.values())
 
-    def get_total_price(self):
+    def get_total_price(self) -> Decimal:
         return sum(Decimal(item["price"]) * item["quantity"]
                    for item in self.cart.values())
 
-    def clear(self):
+    def clear(self) -> None:
         del self.session[settings.CART_SESSION_ID]
         self.save()
