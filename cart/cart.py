@@ -12,7 +12,7 @@ class Cart:
             cart = self.session[settings.CART_SESSION_ID] = {}
         self.cart = cart
 
-    def add(self, product: Product, quantity=1, override_quantity: bool = False) -> None:
+    def add(self, product: Product, quantity: int = 1, override_quantity: bool = False) -> None:
         product_id = str(product.id)
         if product_id not in self.cart:
             self.cart[product_id] = {"quantity": 0,
